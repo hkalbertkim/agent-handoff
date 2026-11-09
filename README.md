@@ -4,6 +4,12 @@
 
 Agent Handoff is a working, **local-first multiplayer AI workflow prototype** built at **[c0mpiled-17 Seoul](https://luma.com/compiled-8lsr)** for YC's **Multiplayer AI** request. Two people share one live task. One person controls it at a time. Handoffs require acceptance, and server-enforced constraints survive the transfer.
 
+## See it in action — two real browsers
+
+![Developer A hands over an active task to Developer B in the running Agent Handoff app](demo/agent-handoff-two-developers.gif)
+
+*Real 13-second Chromium recording of Developer A (left) and Developer B (right), showing live task state, a control handoff, server-side authorization, and the verified login fixture. Not a UI mockup. No audio.*
+
 **[Run it in 2 minutes](#run-it-in-2-minutes)** · **[Try the live handoff](#try-the-handoff)** · **[See real browser proof](#real-browser-proof)** · **[What works and what does-not](#what-works-and-what-does-not)** · **[Hackathon tracks](#hackathon-tracks)**
 
 ## Live workspace interface
