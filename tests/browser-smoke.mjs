@@ -45,6 +45,8 @@ try {
     pageB.waitForFunction(()=>document.querySelector('#controller')?.textContent==='Controller: B')
   ]);
 
+  await pageA.locator('details').first().locator('summary').click();
+  await pageB.locator('details').first().locator('summary').click();
   await pageA.locator('#probe').click();
   await delay(1600);
   await pageA.waitForFunction(()=>document.querySelector('#notice')?.textContent.includes('NOT_CONTROLLER'));
