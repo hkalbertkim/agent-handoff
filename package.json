@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Verified multiplayer AI session handoff (c0mpiled-17)",
+  "description": "A shared task workspace with explicit human handoff, server-owned control, and preserved constraints.",
   "scripts": {
     "start": "node src/server.mjs",
     "demo": "node src/server.mjs",

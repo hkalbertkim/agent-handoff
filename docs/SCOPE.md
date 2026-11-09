@@ -1,7 +1,7 @@
 # Frozen Scope — 2026-11-09
 
 ## Goal
-Demonstrate a **single live AI task** shared by two people, with an explicit, correct and auditable controller handoff. YC Multiplayer AI requires more than two users viewing a transcript.
+Demonstrate a **single live task** shared by two people, with an explicit, correct, and auditable controller handoff. This is more than two users viewing a transcript.
 
 ## Acceptance Criteria
 1. Browser A starts a bounded task. Both browsers see the same session ID and a consistent ordered event stream.
@@ -25,5 +25,3 @@ Demonstrate a **single live AI task** shared by two people, with an explicit, co
 ## Deferred
 Multiple sessions, broad team membership, external account integrations, general coding agents, durable distributed infrastructure, custom model adapters, production write operations, sophisticated UI.
 
-## Hackathon requirement
-Build-session commits only; 90-second demo and GitHub repository URL required.
