@@ -75,7 +75,7 @@ details{margin-top:18px;border-top:1px solid #ebedf6;padding-top:15px}summary{cu
 <div class="action"><button id="start">Start task</button><button class="secondary" id="diagnose">Scripted diagnosis</button><button class="secondary" id="model">Ask live model</button></div>
 <div class="action"><button id="handoff">Offer handoff</button><button id="accept">Accept handoff</button><button class="secondary" id="reject">Reject</button></div>
 <p id="pending" aria-live="polite">No pending handoff</p><p class="help">Only the active controller can issue task commands. A handoff takes effect when the other participant accepts.</p>
-<details><summary>Developer verification tools</summary><p class="help">These buttons test server policy. They are part of the hackathon fixture, not a general-purpose AI coding interface.</p>
+<details><summary>Developer verification tools</summary><p class="help">These buttons test server policy. They operate on a local, deterministic test fixture, not a general-purpose AI coding interface.</p>
 <div class="action" style="margin-top:12px"><button class="danger" id="forbidden">Attempt: disable auth</button><button class="secondary" id="probe">Try instruction as observer (expect HTTP 403)</button></div></details>
 </section>
 </div>
