@@ -20,13 +20,13 @@ p{line-height:1.55}#notice{font-size:13px;min-height:23px;color:#e7d6a2}.constra
 <main>
 <section class="card full"><div class="row"><div><div class="muted">Shared session</div><h2 id="sessionId">Connecting…</h2></div><div><span class="pill" id="role">Role: —</span><span class="pill" id="controller">Controller: —</span><span class="pill" id="status">—</span></div></div><p id="goal">—</p><div class="constraint" id="constraints">—</div><p id="notice"></p></section>
 <section class="card"><h2>Control</h2><p class="muted">Only the controller can send instructions. Another participant must accept an explicit handoff.</p>
-<div class="row"><button id="start">Start task</button><button class="secondary" id="diagnose">Diagnose</button><button class="secondary" id="handoff">Offer handoff</button></div>
+<div class="row"><button id="start">Start task</button><button class="secondary" id="diagnose">Scripted diagnosis</button><button class="secondary" id="model">Ask live model</button><button class="secondary" id="handoff">Offer handoff</button></div>
 <p id="pending" class="muted"></p>
 <div class="row"><button id="accept">Accept handoff</button><button class="secondary" id="reject">Reject</button></div>
 <hr style="border:0;border-top:1px solid #344054;margin:23px 0"/>
 <h3>Policy stress test</h3>
 <div class="row"><button class="danger" id="forbidden">Attempt: disable auth</button><button id="fix">Apply safe fix & test</button></div>
-<p class="muted">Tool operations are constrained to an in-memory fixture. Authentication bypass is always rejected by server policy.</p>
+<p><button class="secondary" id="probe">Try instruction as observer (expect HTTP 403)</button></p><p class="muted">Tool operations are constrained to an in-memory fixture. Authentication bypass is always rejected by server policy.</p>
 </section>
 <section class="card"><h2>Live event stream</h2><div id="timeline"></div></section>
 <section class="card full"><h2>Actual fixture state & test outcome</h2><pre id="fixture">—</pre><p id="tests" class="muted">No tests run</p><p class="muted">Agent mode: <strong id="mode">—</strong>. Scripted demo actions are not presented as real LLM-generated code. This prototype uses deterministic, locally verified code changes.</p></section>
@@ -51,11 +51,13 @@ function render(s) {
  for (const name of ['start','diagnose','handoff','forbidden','fix']) el(name).disabled=!mine;
  el('start').disabled=!mine||s.task.status!=='ready';
  el('diagnose').disabled=!mine||s.task.status!=='running';
+ el('model').disabled=!mine||s.task.status!=='running'||s.agentMode!=='model-assisted';
  el('fix').disabled=!mine||s.task.status!=='running';
  el('forbidden').disabled=!mine||s.task.status!=='running';
  el('handoff').disabled=!mine||s.task.status!=='running'||!!s.pendingHandoff;
  el('accept').disabled=!(s.pendingHandoff&&s.pendingHandoff.to===actor);
  el('reject').disabled=el('accept').disabled;
+ el('probe').disabled=mine;
  el('pending').textContent=s.pendingHandoff?'Pending handoff '+s.pendingHandoff.from+' → '+s.pendingHandoff.to:'No pending handoff';
  const timeline=el('timeline');timeline.replaceChildren();
  for (const ev of s.events.slice().reverse()) {
@@ -78,11 +80,13 @@ async function cmd(action,payload={}){
 }
 el('start').onclick=()=>cmd('START_TASK');
 el('diagnose').onclick=()=>cmd('INSTRUCT',{instruction:'diagnose'});
+el('model').onclick=()=>cmd('MODEL_DIAGNOSE');
 el('handoff').onclick=()=>cmd('PROPOSE_HANDOFF',{to:actor==='A'?'B':'A'});
 el('accept').onclick=()=>cmd('ACCEPT_HANDOFF');
 el('reject').onclick=()=>cmd('REJECT_HANDOFF');
 el('forbidden').onclick=()=>cmd('INSTRUCT',{instruction:'disable-auth'});
 el('fix').onclick=()=>cmd('INSTRUCT',{instruction:'apply-safe-fix'});
+el('probe').onclick=()=>cmd('INSTRUCT',{instruction:'diagnose'});
 if(!token){notice('Missing invitation token. Open one of the two localhost URLs printed by the server.')}
 else {
  fetch('/api/session?token='+encodeURIComponent(token)).then(r=>r.json().then(d=>({ok:r.ok,data:d}))).then(({ok,data})=>{

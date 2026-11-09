@@ -3,9 +3,11 @@ import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {dirname, join} from 'node:path';
 import {SessionEngine, SessionError} from './engine.mjs';
+import {modelDiagnosis} from './model.mjs';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const session = new SessionEngine();
+const session = new SessionEngine({agent: Boolean(process.env.OPENAI_API_KEY)});
+let modelBusy = false;
 const host = process.env.HOST || '127.0.0.1';
 const port = Number(process.env.PORT || 4177);
 
@@ -48,7 +50,31 @@ async function handler(req, res) {
       let command;
       try {command = JSON.parse(raw);} catch {throw new SessionError('INVALID_JSON','Expected valid JSON',400);}
       const token = req.headers.authorization?.replace(/^Bearer /i,'');
-      const result = session.command({...command, token});
+      let result;
+      if (command.action === 'MODEL_DIAGNOSE') {
+        if (!process.env.OPENAI_API_KEY)
+          throw new SessionError('MODEL_NOT_CONFIGURED', 'Set OPENAI_API_KEY locally to enable live model diagnosis', 503);
+        session.assertCanDiagnose({token, expectedVersion: command.expectedVersion});
+        if (modelBusy) throw new SessionError('MODEL_BUSY', 'Model diagnosis already in progress', 409);
+        modelBusy = true;
+        try {
+          const analysis = await modelDiagnosis({
+            goal: session.task.goal, fixture: session.task.fixture,
+            constraints: [...session.constraints]
+          });
+          // Re-authorize on completion: handoff may have happened during await.
+          result = session.recordModelDiagnosis({
+            token, expectedVersion: command.expectedVersion, analysis
+          });
+        } catch (error) {
+          if (error instanceof SessionError) throw error;
+          throw new SessionError('MODEL_FAILED', 'Live model diagnosis unavailable', 502);
+        } finally {
+          modelBusy = false;
+        }
+      } else {
+        result = session.command({...command, token});
+      }
       return json(res, 200, result);
     }
     return json(res,404,{error:'NOT_FOUND'});

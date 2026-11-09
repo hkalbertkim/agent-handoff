@@ -78,6 +78,26 @@ export class SessionEngine {
       throw new SessionError('STALE_VERSION', 'Session version changed; refresh and retry', 409);
   }
 
+  // Recheck authorization both before and after any asynchronous model request.
+  // Handoffs invalidate in-flight diagnoses: a former controller cannot publish.
+  assertCanDiagnose({token, expectedVersion}) {
+    const actor = this.actor(token);
+    this.#requireVersion(expectedVersion);
+    this.#requireController(actor);
+    if (this.task.status !== 'running')
+      throw new SessionError('NOT_RUNNING', 'Task must be running');
+    return actor;
+  }
+
+  recordModelDiagnosis({token, expectedVersion, analysis}) {
+    const actor = this.assertCanDiagnose({token, expectedVersion});
+    if (typeof analysis !== 'string' || !analysis.trim())
+      throw new SessionError('INVALID_MODEL_OUTPUT', 'Diagnosis must not be empty', 422);
+    this.emit('LIVE_MODEL_DIAGNOSIS', actor, {analysis: analysis.slice(0, 1400)});
+    this.version++;
+    return {ok: true, version: this.version, snapshot: this.snapshot()};
+  }
+
   /**
    * Actions are synchronous and serialized within this Node process.
    * There are no await points between authorization, mutation and event emission.

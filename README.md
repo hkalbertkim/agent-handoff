@@ -56,3 +56,19 @@ It proves the shared session, handoff, server-side control, constraint gate and 
 It does **not** yet demonstrate free-form AI agent task continuation, multi-model portability, or durable distributed sessions. Do not claim those capabilities.
 
 Next implementation gate: safely integrate one real model-assisted, allowlisted code task in an isolated workspace while preserving the same server-side authorization checks.
+
+## Optional real model diagnosis (bounded)
+
+The default fixture mode requires **no credentials** and is clearly labeled scripted. To use a real model only for read-only analysis, configure `OPENAI_API_KEY` on the local server and start it again. Optional: `OPENAI_MODEL` (defaults to `gpt-6-luna`).
+
+```bash
+OPENAI_API_KEY=your-key npm start
+```
+
+When a current controller clicks **Ask live model**, the server calls the Responses API for a short diagnosis of the fixed test fixture. The server **checks controller permission before and after** the model call, so a handoff invalidates a diagnosis still in flight. The model never receives command tools, credentials or filesystem access. Any code change remains a deterministic, policy-gated fixture operation.
+
+This is a genuine API-based model analysis only when an API key is configured and a request succeeds. The included CI tests exercise the adapter with a **mock model response**, not a live OpenAI request. Do not claim unverified live-model QC.
+
+## QC gates
+
+GitHub Actions runs syntax checks, unit tests, model-adapter tests and a real local HTTP two-actor regression on Node.js 20 and 22. Browser visual QC and live-provider request QC are separate unfinished gates.
