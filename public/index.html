@@ -20,7 +20,7 @@ p{line-height:1.55}#notice{font-size:13px;min-height:23px;color:#e7d6a2}.constra
 <main>
 <section class="card full"><div class="row"><div><div class="muted">Shared session</div><h2 id="sessionId">Connecting…</h2></div><div><span class="pill" id="role">Role: —</span><span class="pill" id="controller">Controller: —</span><span class="pill" id="status">—</span></div></div><p id="goal">—</p><div class="constraint" id="constraints">—</div><p id="notice"></p></section>
 <section class="card"><h2>Control</h2><p class="muted">Only the controller can send instructions. Another participant must accept an explicit handoff.</p>
-<div class="row"><button id="start">Start task</button><button class="secondary" id="diagnose">Diagnose</button><button class="secondary" id="handoff">Offer handoff</button></div>
+<div class="row"><button id="start">Start task</button><button class="secondary" id="diagnose">Scripted diagnosis</button><button class="secondary" id="model">Ask live model</button><button class="secondary" id="handoff">Offer handoff</button></div>
 <p id="pending" class="muted"></p>
 <div class="row"><button id="accept">Accept handoff</button><button class="secondary" id="reject">Reject</button></div>
 <hr style="border:0;border-top:1px solid #344054;margin:23px 0"/>
@@ -51,6 +51,7 @@ function render(s) {
  for (const name of ['start','diagnose','handoff','forbidden','fix']) el(name).disabled=!mine;
  el('start').disabled=!mine||s.task.status!=='ready';
  el('diagnose').disabled=!mine||s.task.status!=='running';
+ el('model').disabled=!mine||s.task.status!=='running'||s.agentMode!=='model-assisted';
  el('fix').disabled=!mine||s.task.status!=='running';
  el('forbidden').disabled=!mine||s.task.status!=='running';
  el('handoff').disabled=!mine||s.task.status!=='running'||!!s.pendingHandoff;
@@ -79,6 +80,7 @@ async function cmd(action,payload={}){
 }
 el('start').onclick=()=>cmd('START_TASK');
 el('diagnose').onclick=()=>cmd('INSTRUCT',{instruction:'diagnose'});
+el('model').onclick=()=>cmd('MODEL_DIAGNOSE');
 el('handoff').onclick=()=>cmd('PROPOSE_HANDOFF',{to:actor==='A'?'B':'A'});
 el('accept').onclick=()=>cmd('ACCEPT_HANDOFF');
 el('reject').onclick=()=>cmd('REJECT_HANDOFF');
