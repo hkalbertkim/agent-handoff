@@ -33,7 +33,7 @@ try {
   await delay(1200);
   await pageA.locator('#start').click();
   await delay(1300);
-  await pageB.waitForFunction(()=>document.querySelector('#status')?.textContent==='running');
+  await pageB.waitForFunction(()=>document.querySelector('#status')?.textContent==='Task in progress');
   await pageA.locator('#handoff').click();
   await delay(1500);
   await pageB.locator('#accept').waitFor({state:'visible'});
