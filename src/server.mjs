@@ -38,7 +38,8 @@ async function handler(req, res) {
       sendEvent(res, 'snapshot', session.snapshot());
       const stop = session.subscribe((event) => sendEvent(res, 'update', {event, session: session.snapshot()}));
       const heartbeat = setInterval(()=>res.write(': ping\n\n'),20000);
-      req.on('close',()=>{stop();clearInterval(heartbeat);});
+      // IncomingMessage may close after request parsing; SSE lifetime follows ServerResponse.
+      res.on('close',()=>{stop();clearInterval(heartbeat);});
       return;
     }
     if (req.method === 'POST' && url.pathname === '/api/command') {
