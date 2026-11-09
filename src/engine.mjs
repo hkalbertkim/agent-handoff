@@ -65,7 +65,11 @@ export class SessionEngine {
   emit(type, actor, data = {}) {
     const event = {seq: ++this.sequence, time: new Date().toISOString(), type, actor, data};
     this.events.push(event);
-    for (const listener of this.listeners) listener(event);
+    // Publish only after the synchronous state transition commits its version.
+    // Otherwise observers receive a stale version and their next command conflicts.
+    queueMicrotask(() => {
+      for (const listener of this.listeners) listener(event);
+    });
     return event;
   }
 
