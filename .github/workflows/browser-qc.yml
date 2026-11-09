@@ -20,10 +20,10 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: E2E two-browser scenario
         run: node tests/browser-smoke.mjs
-      - name: Store screenshot evidence
+      - name: Store real browser video and screenshot evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: two-browser-evidence
-          path: artifacts/*.png
+          path: artifacts/*
           if-no-files-found: ignore
