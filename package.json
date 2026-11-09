@@ -1,0 +1,12 @@
+{
+  "name": "agent-handoff",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Verified multiplayer AI session handoff (c0mpiled-17)",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": {"node": ">=20"}
+}

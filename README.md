@@ -31,3 +31,28 @@ Scaffold initialized; implementation and end-to-end QC pending.
 ## Event
 
 [c0mpiled-17 Seoul](https://luma.com/compiled-8lsr) · YC RFS track: Multiplayer AI.
+
+## Run the local prototype
+
+Requires Node.js 20 or later. No runtime packages or cloud account required.
+
+```bash
+npm test
+npm start
+```
+
+The server binds to `127.0.0.1:4177` by default. The startup output prints two **private** local invitation URLs:
+- A: starts as Controller.
+- B: starts as Observer; can accept a handoff.
+
+Open each invitation in a separate browser window. These URLs contain access tokens. Never publish them or use them on a public host.
+
+Demo sequence: A starts the task, diagnoses the fixture, offers the handoff; B accepts; verify that A cannot execute instructions; B attempts to remove authentication (policy rejects it), then applies the safe fix and the fixture's three assertions pass.
+
+## Honest demo limits
+
+The local prototype uses a **deterministic scripted fixture worker**, not a real LLM.
+It proves the shared session, handoff, server-side control, constraint gate and test execution.
+It does **not** yet demonstrate free-form AI agent task continuation, multi-model portability, or durable distributed sessions. Do not claim those capabilities.
+
+Next implementation gate: safely integrate one real model-assisted, allowlisted code task in an isolated workspace while preserving the same server-side authorization checks.
