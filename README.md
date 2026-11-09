@@ -6,6 +6,21 @@ Agent Handoff is a working, **local-first multiplayer AI workflow prototype** bu
 
 **[Run it in 2 minutes](#run-it-in-2-minutes)** · **[Try the live handoff](#try-the-handoff)** · **[See real browser proof](#real-browser-proof)** · **[What works and what does-not](#what-works-and-what-does-not)** · **[Hackathon tracks](#hackathon-tracks)**
 
+## Live workspace interface
+
+The running app uses the **same light visual direction as the hackathon presentation**: an off-white canvas, pale blue and lavender cards, clear participant roles, and a protected-constraint panel. The screenshots in the presentation are concept illustrations; the app itself is a working UI.
+
+What appears on screen:
+
+- **Current task:** shows the real task goal, status, and preserved authentication constraint.
+- **Participants:** Developer A and Developer B show which person currently controls the task.
+- **Task controls:** start, diagnose, offer handoff, accept handoff, and apply the verified fix.
+- **Live activity:** both browser windows receive the same server-authored event updates.
+- **Verification:** displays real fixture test status.
+- **Developer verification tools:** policy stress-test actions are placed in a collapsible section rather than the main workflow.
+
+The design does **not** imply automatic LLM code execution or gbrain integration. The same server permissions, in-memory session, and deterministic test fixture remain in place.
+
 ## Run it in 2 minutes
 
 Requires **Node.js 20+** and Git. No database, Docker, API key, package installation, or signup.

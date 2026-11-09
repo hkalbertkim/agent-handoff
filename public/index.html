@@ -1,82 +1,141 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Agent Handoff — Shared Execution</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f8f9ff">
+<title>Agent Handoff — Shared Workspace</title>
 <style>
-:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;color:#e8e9ef;background:#101217}
-*{box-sizing:border-box}body{margin:0}header{padding:24px max(28px,calc((100vw - 1100px)/2));background:#181c25;border-bottom:1px solid #303644}
-h1{margin:0;font-size:25px;letter-spacing:-.8px}.sub{color:#9ba6b8;font-size:14px;margin-top:5px}
-main{max-width:1100px;padding:24px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.card{padding:23px;background:#1a202b;border:1px solid #30394a;border-radius:16px;min-width:0}.full{grid-column:1/-1}
-small,.muted{color:#a6b3c7}.pill{display:inline-block;background:#25344b;color:#bcd7fd;border-radius:30px;padding:5px 10px;font-size:12px;margin-right:8px}
-.row{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
-button{background:#50d7bf;color:#082725;padding:11px 16px;border:0;border-radius:9px;font-weight:750;cursor:pointer}button:disabled{opacity:.3;cursor:not-allowed}
-button.secondary{background:#303b50;color:#f1f6fb}button.danger{background:#573237;color:#ffcad0}
-#timeline{display:flex;flex-direction:column;gap:8px;max-height:450px;overflow:auto}.event{padding:12px;border:1px solid #30394a;border-radius:10px;background:#141924;font-size:13px}
-.event strong{color:#72e1ce}.event code{color:#acbcda;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#10151f;padding:12px;border-radius:10px;font-size:12px}
-p{line-height:1.55}#notice{font-size:13px;min-height:23px;color:#e7d6a2}.constraint{color:#ffdf9f}
-@media(max-width:760px){main{grid-template-columns:1fr}.full{grid-column:auto}header{padding:20px}}
-</style></head><body>
-<header><h1>Agent Handoff <span class="pill">c0mpiled-17</span></h1><div class="sub">One AI task. Multiple humans. No lost context.</div></header>
-<main>
-<section class="card full"><div class="row"><div><div class="muted">Shared session</div><h2 id="sessionId">Connecting…</h2></div><div><span class="pill" id="role">Role: —</span><span class="pill" id="controller">Controller: —</span><span class="pill" id="status">—</span></div></div><p id="goal">—</p><div class="constraint" id="constraints">—</div><p id="notice"></p></section>
-<section class="card"><h2>Control</h2><p class="muted">Only the controller can send instructions. Another participant must accept an explicit handoff.</p>
-<div class="row"><button id="start">Start task</button><button class="secondary" id="diagnose">Scripted diagnosis</button><button class="secondary" id="model">Ask live model</button><button class="secondary" id="handoff">Offer handoff</button></div>
-<p id="pending" class="muted"></p>
-<div class="row"><button id="accept">Accept handoff</button><button class="secondary" id="reject">Reject</button></div>
-<hr style="border:0;border-top:1px solid #344054;margin:23px 0"/>
-<h3>Policy stress test</h3>
-<div class="row"><button class="danger" id="forbidden">Attempt: disable auth</button><button id="fix">Apply safe fix & test</button></div>
-<p><button class="secondary" id="probe">Try instruction as observer (expect HTTP 403)</button></p><p class="muted">Tool operations are constrained to an in-memory fixture. Authentication bypass is always rejected by server policy.</p>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#242943;background:#f8f9ff;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse 50% 33% at 96% 0%,#eae8ff 0%,transparent 100%),#f8f9ff;min-height:100vh}
+button{font:inherit;cursor:pointer;transition:background .16s,transform .16s}button:focus-visible,summary:focus-visible{outline:3px solid #647cf3;outline-offset:3px}
+button:hover:not(:disabled){transform:translateY(-1px)}button:disabled{opacity:.36;cursor:not-allowed;transform:none}
+.shell{max-width:1170px;margin:auto;padding:0 26px}.top{background:rgba(255,255,255,.83);border-bottom:1px solid #e9ebf5}
+.nav{display:flex;align-items:center;justify-content:space-between;min-height:74px;gap:14px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px;letter-spacing:-.6px}
+.mark{width:34px;height:34px;border-radius:12px;background:linear-gradient(140deg,#837af8,#4e82ec);color:white;display:grid;place-items:center;font-size:20px}
+.kicker{font-size:11px;letter-spacing:1.6px;font-weight:750;color:#7d83a3;text-transform:uppercase}
+.tag{display:inline-flex;align-items:center;gap:7px;background:#f2f2ff;border:1px solid #e7e8fc;color:#6664a9;padding:7px 11px;border-radius:100px;font-size:12px;font-weight:700}
+.dot{width:7px;height:7px;border-radius:100%;background:#21b887}.page{padding-top:39px;padding-bottom:55px}
+.heading{display:flex;align-items:end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:23px}
+h1{font-size:clamp(28px,3.3vw,40px);letter-spacing:-1.6px;line-height:1.15;margin:7px 0 8px}
+.sub{margin:0;color:#7b819b;font-size:14px;line-height:1.6}.status{background:#eaf8f0;color:#278064;font-weight:750;padding:10px 15px;border-radius:12px;font-size:13px}
+.panel{background:rgba(255,255,255,.96);border:1px solid #e5e9f4;box-shadow:0 12px 38px rgba(64,77,117,.06);border-radius:20px;padding:24px}
+.hero{margin-bottom:19px}.hero-top{display:flex;align-items:start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+h2{margin:6px 0;font-size:22px;letter-spacing:-.65px}h3{margin:0 0 15px;font-size:16px;letter-spacing:-.2px}
+.hero-goal{font-size:16px;font-weight:760;margin:8px 0 15px}.policy{display:flex;gap:10px;align-items:center;border:1px solid #dcebe7;background:#f1faf7;color:#397a64;padding:13px 15px;border-radius:12px;font-size:13px}
+.policy b{font-weight:800}.shield{background:#d6f2e4;border-radius:9px;padding:7px;font-size:15px}
+.pills{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:7px 10px;border-radius:8px;background:#f0f2ff;color:#6d72a6;font-size:12px;font-weight:750}
+.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:19px;align-items:start}
+.stack{display:grid;gap:19px}.participants{display:grid;grid-template-columns:1fr 45px 1fr;align-items:center;gap:7px;margin-bottom:18px}
+.person{background:#f9faff;border:1px solid #e6eafd;padding:17px;border-radius:14px;min-width:0}
+.person.active{background:#f5f4ff;border-color:#aaa8fa;box-shadow:0 0 0 2px rgba(133,126,240,.12)}
+.avatar{width:37px;height:37px;border-radius:12px;display:grid;place-items:center;background:#e9e8ff;color:#665fe1;font-weight:800}
+.person .name{font-size:14px;font-weight:800}.person .role{font-size:12px;color:#79809c;margin-top:3px}
+.identity{display:flex;gap:10px;align-items:center}.transfer{color:#938bd6;font-size:24px;text-align:center}
+.mini-role{display:inline-flex;margin-top:13px;border-radius:100px;padding:5px 9px;background:#e9edf7;color:#65708f;font-size:11px;font-weight:780}
+.person.active .mini-role{color:#6258c7;background:#e8e5ff}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.step{display:flex;align-items:center;gap:8px;font-size:12px;color:#858ba6}
+.num{width:25px;height:25px;flex-shrink:0;background:#eef0f8;color:#8289a5;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800}
+.step.done{color:#5b63aa;font-weight:730}.step.done .num{background:#e5e4ff;color:#675fe5}
+.action{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:14px}
+button{border:0;border-radius:11px;padding:11px 14px;font-weight:760;font-size:13px;background:#6c6be8;color:#fff}
+button.secondary{background:#efeffd;color:#5b5caa}
+button.safe{background:#dff5ec;color:#2e8065}button.danger{background:#fcebec;color:#b74c5b}
+.help{font-size:12px;color:#868ba5;line-height:1.55;margin:8px 0 0}.muted{color:#868ba5}
+#pending{font-size:13px;margin:4px 0 13px;color:#695ed6}
+.activity{max-height:330px;overflow:auto;display:flex;flex-direction:column;gap:9px}
+.event{padding:11px 13px;background:#f9faff;border:1px solid #edf0fa;border-radius:12px}
+.event strong{color:#4c5491;font-size:12px}.event .meta{font-size:11px;color:#9298b1;margin-top:4px}
+.event code{display:block;color:#7b8199;font-family:ui-sans-serif,system-ui;font-size:11px;overflow-wrap:anywhere;margin-top:5px;line-height:1.35}
+.notice{margin-top:13px;min-height:25px;font-size:12px;color:#7d62ad}
+.results{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #e9ebf7;border-radius:13px;background:#fafbff;padding:14px;margin:10px 0}
+#tests{font-weight:800;font-size:14px;color:#4b597a}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f6fd;color:#555d81;padding:13px;border-radius:11px;font-size:12px}
+details{margin-top:18px;border-top:1px solid #ebedf6;padding-top:15px}summary{cursor:pointer;color:#62688f;font-size:13px;font-weight:730}
+.debug-grid{margin-top:14px;border:1px solid #e9ecf7;background:#fbfcff;padding:15px;border-radius:13px}
+.footer{color:#9ba1b8;text-align:center;font-size:12px;margin-top:25px}
+@media(max-width:780px){.layout{grid-template-columns:1fr}.page{padding-top:25px}.panel{padding:19px}.participants{grid-template-columns:1fr 30px 1fr}.step{font-size:10px}.shell{padding:0 16px}.hero-goal{font-size:15px}}
+@media(prefers-reduced-motion:reduce){button{transition:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="shell nav"><div class="brand"><span class="mark" aria-hidden="true">↗</span>Agent Handoff</div><span class="tag"><span class="dot" aria-hidden="true"></span> LOCAL LIVE SESSION</span></div></header>
+<main class="shell page">
+<div class="heading"><div><div class="kicker">Shared workspace</div><h1>One task. Two people.<br>One clear handoff.</h1><p class="sub">Share progress, pass control, and protect the original task constraints.</p></div><span id="status" class="status">Connecting…</span></div>
+<section class="panel hero"><div class="hero-top"><div><div class="kicker">Current task</div><h2>Login edge-case fix</h2></div><div class="pills"><span class="pill" id="role">You: —</span><span class="pill" id="controller">Controller: —</span></div></div>
+<p id="goal" class="hero-goal">Connecting to the shared session…</p>
+<div class="policy"><span class="shield" aria-hidden="true">✓</span><div><b>Protected requirement</b><div id="constraints">Loading original constraints…</div></div></div>
+<div id="notice" class="notice" role="status" aria-live="polite"></div></section>
+<div class="layout"><div class="stack">
+<section class="panel"><div class="kicker">Collaboration</div><h3 style="margin-top:6px">Who controls the task?</h3>
+<div class="participants"><div id="personA" class="person"><div class="identity"><span class="avatar">A</span><div><div class="name">Developer A</div><div class="role">Joined session</div></div></div><span id="roleA" class="mini-role">Controller</span></div><div class="transfer" aria-hidden="true">⇄</div><div id="personB" class="person"><div class="identity"><span class="avatar">B</span><div><div class="name">Developer B</div><div class="role">Joined session</div></div></div><span id="roleB" class="mini-role">Observer</span></div></div>
+<div class="steps"><div id="step1" class="step"><span class="num">1</span>Start task</div><div id="step2" class="step"><span class="num">2</span>Hand off control</div><div id="step3" class="step"><span class="num">3</span>Verify result</div></div></section>
+<section class="panel"><div class="kicker">Your next step</div><h3 style="margin-top:6px">Task controls</h3>
+<div class="action"><button id="start">Start task</button><button class="secondary" id="diagnose">Scripted diagnosis</button><button class="secondary" id="model">Ask live model</button></div>
+<div class="action"><button id="handoff">Offer handoff</button><button id="accept">Accept handoff</button><button class="secondary" id="reject">Reject</button></div>
+<p id="pending" aria-live="polite">No pending handoff</p><p class="help">Only the active controller can issue task commands. A handoff takes effect when the other participant accepts.</p>
+<details><summary>Developer verification tools</summary><p class="help">These buttons test server policy. They are part of the hackathon fixture, not a general-purpose AI coding interface.</p>
+<div class="action" style="margin-top:12px"><button class="danger" id="forbidden">Attempt: disable auth</button><button class="secondary" id="probe">Try instruction as observer (expect HTTP 403)</button></div></details>
 </section>
-<section class="card"><h2>Live event stream</h2><div id="timeline"></div></section>
-<section class="card full"><h2>Actual fixture state & test outcome</h2><pre id="fixture">—</pre><p id="tests" class="muted">No tests run</p><p class="muted">Agent mode: <strong id="mode">—</strong>. Scripted demo actions are not presented as real LLM-generated code. This prototype uses deterministic, locally verified code changes.</p></section>
-</main>
+</div>
+<div class="stack">
+<section class="panel"><div class="kicker">Live activity</div><h3 style="margin-top:6px">Everyone sees the same progress</h3><div id="timeline" class="activity" aria-live="polite"></div></section>
+<section class="panel"><div class="kicker">Verification</div><h3 style="margin-top:6px">Task result</h3><div class="results"><span id="tests">Not yet verified</span><span aria-hidden="true">✓</span></div><button class="safe" id="fix">Apply safe fix & test</button>
+<p class="help">This test applies a deterministic password-boundary fix and checks three assertions.</p>
+<details><summary>View fixture and execution details</summary><div class="debug-grid"><div class="kicker">Actual fixture</div><pre id="fixture">—</pre><p class="help">Execution mode: <strong id="mode">—</strong>. Scripted demo actions are not presented as LLM-generated code.</p><p class="help" id="sessionId">—</p></div></details></section>
+</div></div><div class="footer">Local-first prototype · One shared session · No public deployment</div></main>
 <script>
-const token = new URL(location.href).searchParams.get('token');
-const el = (id)=>document.getElementById(id);
+const token=new URL(location.href).searchParams.get('token');
+const el=id=>document.getElementById(id);
 let state=null,actor=null;
-function notice(t){el('notice').textContent=t;}
-function render(s) {
- state=s;
- el('sessionId').textContent=s.id.slice(0,8)+'… · version '+s.version+' · seq '+s.sequence;
- el('role').textContent='You: '+actor;
- el('controller').textContent='Controller: '+s.controller;
- el('status').textContent=s.task.status;
- el('goal').textContent=s.task.goal;
- el('constraints').textContent='Constraint: '+s.constraints.join('; ');
- el('fixture').textContent=s.task.fixture;
- el('tests').textContent=s.task.testsPassed?'PASS: 3/3 real fixture assertions':'Fixture test not yet passed';
- el('mode').textContent=s.agentMode;
- const mine=s.controller===actor;
- for (const name of ['start','diagnose','handoff','forbidden','fix']) el(name).disabled=!mine;
- el('start').disabled=!mine||s.task.status!=='ready';
- el('diagnose').disabled=!mine||s.task.status!=='running';
- el('model').disabled=!mine||s.task.status!=='running'||s.agentMode!=='model-assisted';
- el('fix').disabled=!mine||s.task.status!=='running';
- el('forbidden').disabled=!mine||s.task.status!=='running';
- el('handoff').disabled=!mine||s.task.status!=='running'||!!s.pendingHandoff;
- el('accept').disabled=!(s.pendingHandoff&&s.pendingHandoff.to===actor);
- el('reject').disabled=el('accept').disabled;
- el('probe').disabled=mine;
- el('pending').textContent=s.pendingHandoff?'Pending handoff '+s.pendingHandoff.from+' → '+s.pendingHandoff.to:'No pending handoff';
- const timeline=el('timeline');timeline.replaceChildren();
- for (const ev of s.events.slice().reverse()) {
-  const node=document.createElement('div');node.className='event';
-  const strong=document.createElement('strong');strong.textContent='#'+ev.seq+' '+ev.type;
-  const meta=document.createElement('div');meta.className='muted';meta.textContent=ev.actor+' · '+new Date(ev.time).toLocaleTimeString();
-  const detail=document.createElement('code');detail.textContent=JSON.stringify(ev.data);
-  node.append(strong,meta,detail);timeline.appendChild(node);
- }
+const labels={SESSION_CREATED:'Session created',TASK_STARTED:'Task started',HANDOFF_PROPOSED:'Control handoff requested',HANDOFF_ACCEPTED:'Control transferred',HANDOFF_REJECTED:'Handoff declined',AGENT_DIAGNOSIS:'Fixture diagnosed',LIVE_MODEL_DIAGNOSIS:'Live model diagnosis',POLICY_BLOCKED:'Constraint protected',FIX_APPLIED:'Safe fix applied'};
+function notice(message){el('notice').textContent=message;}
+function render(s){
+state=s;
+el('sessionId').textContent='Session '+s.id.slice(0,8)+' · version '+s.version+' · seq '+s.sequence;
+el('role').textContent='You: '+actor;
+el('controller').textContent='Controller: '+s.controller;
+el('status').textContent=s.task.status==='passed'?'Verified · 3/3 passed':s.task.status==='running'?'Task in progress':'Ready to begin';
+el('goal').textContent=s.task.goal;
+el('constraints').textContent=s.constraints.join('; ');
+el('fixture').textContent=s.task.fixture;
+el('tests').textContent=s.task.testsPassed?'PASS: 3/3 real fixture assertions':'Awaiting 3 fixture tests';
+el('mode').textContent=s.agentMode;
+for(const a of ['A','B']){el('person'+a).classList.toggle('active',a===s.controller);el('role'+a).textContent=a===s.controller?'Controller':'Observer';}
+el('step1').classList.toggle('done',s.task.status!=='ready');
+el('step2').classList.toggle('done',s.controller!=='A');
+el('step3').classList.toggle('done',s.task.testsPassed);
+const mine=s.controller===actor;
+for(const name of ['start','diagnose','handoff','forbidden','fix'])el(name).disabled=!mine;
+el('start').disabled=!mine||s.task.status!=='ready';
+el('diagnose').disabled=!mine||s.task.status!=='running';
+el('model').disabled=!mine||s.task.status!=='running'||s.agentMode!=='model-assisted';
+el('fix').disabled=!mine||s.task.status!=='running';
+el('forbidden').disabled=!mine||s.task.status!=='running';
+el('handoff').disabled=!mine||s.task.status!=='running'||!!s.pendingHandoff;
+el('accept').disabled=!(s.pendingHandoff&&s.pendingHandoff.to===actor);
+el('reject').disabled=el('accept').disabled;
+el('probe').disabled=mine;
+el('pending').textContent=s.pendingHandoff?'Pending: Developer '+s.pendingHandoff.from+' → Developer '+s.pendingHandoff.to:'No pending handoff';
+const timeline=el('timeline');timeline.replaceChildren();
+for(const ev of s.events.slice().reverse()){
+const node=document.createElement('div');node.className='event';
+const heading=document.createElement('strong');heading.textContent=(labels[ev.type]||ev.type);
+const meta=document.createElement('div');meta.className='meta';meta.textContent=ev.actor+' · '+new Date(ev.time).toLocaleTimeString();
+const data=document.createElement('code');data.textContent=ev.type==='HANDOFF_ACCEPTED'?'Developer '+ev.data.from+' → Developer '+ev.data.to:ev.type==='POLICY_BLOCKED'?'Authentication requirement preserved':ev.type==='FIX_APPLIED'?'3 password-boundary assertions executed':'';
+node.append(heading,meta,data);timeline.appendChild(node);
+}
 }
 async function cmd(action,payload={}){
- if(!state)return;
- try{
-  const res=await fetch('/api/command',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({expectedVersion:state.version,idempotencyKey:crypto.randomUUID(),action,payload})});
-  const result=await res.json();
-  if (!res.ok) {notice('SERVER REJECTED: '+result.error+' — '+result.message);return;}
-  notice(result.blocked?'POLICY BLOCKED: '+result.reason:action+' accepted by server');
-  render(result.snapshot);
- }catch(e){notice('Request failed: '+e.message)}
+if(!state)return;
+try{
+const res=await fetch('/api/command',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({expectedVersion:state.version,idempotencyKey:crypto.randomUUID(),action,payload})});
+const result=await res.json();
+if(!res.ok){notice('SERVER REJECTED: '+result.error+' — '+result.message);return;}
+notice(result.blocked?'POLICY BLOCKED: '+result.reason:action+' accepted by server');
+render(result.snapshot);
+}catch(error){notice('Request failed: '+error.message);}
 }
 el('start').onclick=()=>cmd('START_TASK');
 el('diagnose').onclick=()=>cmd('INSTRUCT',{instruction:'diagnose'});
@@ -87,15 +146,15 @@ el('reject').onclick=()=>cmd('REJECT_HANDOFF');
 el('forbidden').onclick=()=>cmd('INSTRUCT',{instruction:'disable-auth'});
 el('fix').onclick=()=>cmd('INSTRUCT',{instruction:'apply-safe-fix'});
 el('probe').onclick=()=>cmd('INSTRUCT',{instruction:'diagnose'});
-if(!token){notice('Missing invitation token. Open one of the two localhost URLs printed by the server.')}
-else {
- fetch('/api/session?token='+encodeURIComponent(token)).then(r=>r.json().then(d=>({ok:r.ok,data:d}))).then(({ok,data})=>{
-  if(!ok)throw Error(data.message);
-  actor=data.actor;render(data.session);
-  const stream=new EventSource('/api/events?token='+encodeURIComponent(token));
-  stream.addEventListener('snapshot',e=>render(JSON.parse(e.data)));
-  stream.addEventListener('update',e=>render(JSON.parse(e.data).session));
-  stream.onerror=()=>notice('Connection interrupted; reconnecting automatically…');
- }).catch(e=>notice(e.message));
+if(!token){notice('Missing invitation token. Open one of the two localhost URLs printed by the server.');}
+else{
+fetch('/api/session?token='+encodeURIComponent(token)).then(r=>r.json().then(d=>({ok:r.ok,data:d}))).then(({ok,data})=>{
+if(!ok)throw Error(data.message);
+actor=data.actor;render(data.session);
+const stream=new EventSource('/api/events?token='+encodeURIComponent(token));
+stream.addEventListener('snapshot',e=>render(JSON.parse(e.data)));
+stream.addEventListener('update',e=>render(JSON.parse(e.data).session));
+stream.onerror=()=>notice('Connection interrupted; reconnecting automatically…');
+}).catch(e=>notice(e.message));
 }
 </script></body></html>
